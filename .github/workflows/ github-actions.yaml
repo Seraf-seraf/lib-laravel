@@ -1,0 +1,90 @@
+name: Laravel CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: ${{ secrets.MYSQL_ROOT_PASSWORD }}
+          MYSQL_DATABASE: ${{ secrets.MYSQL_DATABASE }}
+        ports:
+          - 3306:3306
+        options: --health-cmd="mysqladmin ping --silent" --health-interval=10s --health-timeout=5s --health-retries=3
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up PHP and Composer
+        run: composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
+
+      - name: PHP_CodeSniffer
+        run: |
+          ./vendor/bin/phpcbf
+          ./vendor/bin/phpcs --standard=phpcs.xml --ignore=**/vendor/**
+
+      - name: Copy .env and key generate
+        run: |
+          php -r "file_exists('.env') || copy('.env.example', '.env');"
+          php artisan key:generate
+
+      - name: Set up environment and execute migrations
+        env:
+          DB_HOST: ${{ secrets.DB_HOST_FOR_TESTS }}
+          DB_PORT: ${{ secrets.DB_PORT }}
+          DB_DATABASE: ${{ secrets.MYSQL_DATABASE }}
+          DB_USERNAME: ${{ secrets.MYSQL_USER }}
+          DB_PASSWORD: ${{ secrets.MYSQL_ROOT_PASSWORD }}
+        run: |
+          php artisan migrate --force
+
+      - name: Run tests (Unit and Feature tests) via PHPUnit
+        run: php artisan test
+
+  build-and-deploy:
+    needs: lint-and-test
+    runs-on: self-hosted
+    defaults:
+      run:
+        working-directory: /var/www/lib-laravel
+    env:
+      PROJECT_FOLDER: ${{ secrets.PROJECT_FOLDER }}
+      PROJECT_APP_CONTAINER: ${{ secrets.PROJECT_APP_CONTAINER }}
+      PROJECT_DB_CONTAINER: ${{ secrets.PROJECT_DB_CONTAINER }}
+      ENV_PROD: ${{ secrets.ENV_PROD }}
+    steps:
+      - name: git pull
+        run: |
+          git checkout main
+          git pull
+
+      - name: Set up Docker Compose
+        run: |
+          docker-compose down
+          docker-compose up --build -d
+
+      - name: Check health db
+        run: |
+          docker exec ${PROJECT_DB_CONTAINER} sh -c "mysqladmin ping --silent"
+
+      - name: Install dependencies and build assets
+        run: |
+          docker exec ${{ secrets.PROJECT_APP_CONTAINER }} sh -c "composer install"
+          docker exec ${{ secrets.PROJECT_APP_CONTAINER }} sh -c "npm install"
+          docker exec ${{ secrets.PROJECT_APP_CONTAINER }} sh -c "npm run build"
+
+      - name: Copy .env file and run migrations
+        run: |
+          sudo touch .env
+          sudo sh -c "echo '$ENV_PROD' > .env"
+          docker exec ${{ secrets.PROJECT_APP_CONTAINER }} sh -c "php artisan migrate --force"
+
+env:
+  DB_CONNECTION: ${{ secrets.DB_CONNECTION }}
