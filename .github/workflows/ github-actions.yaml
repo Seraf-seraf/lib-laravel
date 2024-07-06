@@ -1,4 +1,4 @@
-name: Laravel CI
+name: Laravel CI/CD
 
 on:
   push:
@@ -69,10 +69,6 @@ jobs:
         run: |
           docker-compose down
           docker-compose up --build -d
-
-      - name: Check health db
-        run: |
-          docker exec ${PROJECT_DB_CONTAINER} sh -c "mysqladmin ping --silent"
 
       - name: Install dependencies and build assets
         run: |
