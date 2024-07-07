@@ -10,6 +10,7 @@ jobs:
   lint-and-test:
     runs-on: ubuntu-latest
     env:
+      DB_CONNECTION: ${{ secrets.DB_CONNECTION }}
       DB_HOST: ${{ secrets.DB_HOST_FOR_TESTS }}
       DB_PORT: ${{ secrets.DB_PORT }}
       DB_DATABASE: ${{ secrets.MYSQL_DATABASE }}
@@ -87,5 +88,8 @@ jobs:
           sudo apt-get install acl -y
           sudo setfacl -R -m u:www-data:rwx /var/www/
 
-env:
-  DB_CONNECTION: ${{ secrets.DB_CONNECTION }}
+      - name: Archive artifact  # Шаг: архивирование артефакта
+        uses: actions/upload-artifact@v2
+        with:
+          name: .env  # Имя артефакта (папка или файл, который вы хотите загрузить)
+          path: .env  # Путь к артефакту, который нужно загрузить
