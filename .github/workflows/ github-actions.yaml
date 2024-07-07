@@ -36,12 +36,6 @@ jobs:
           php artisan key:generate
 
       - name: Set up environment and execute migrations
-        env:
-          DB_HOST: ${{ secrets.DB_HOST_FOR_TESTS }}
-          DB_PORT: ${{ secrets.DB_PORT }}
-          DB_DATABASE: ${{ secrets.MYSQL_DATABASE }}
-          DB_USERNAME: ${{ secrets.MYSQL_USER }}
-          DB_PASSWORD: ${{ secrets.MYSQL_ROOT_PASSWORD }}
         run: |
           php artisan migrate --force
 
@@ -84,3 +78,8 @@ jobs:
 
 env:
   DB_CONNECTION: ${{ secrets.DB_CONNECTION }}
+  DB_HOST: ${{ secrets.DB_HOST_FOR_TESTS }}
+  DB_PORT: ${{ secrets.DB_PORT }}
+  DB_DATABASE: ${{ secrets.MYSQL_DATABASE }}
+  DB_USERNAME: ${{ secrets.MYSQL_USER }}
+  DB_PASSWORD: ${{ secrets.MYSQL_ROOT_PASSWORD }}
