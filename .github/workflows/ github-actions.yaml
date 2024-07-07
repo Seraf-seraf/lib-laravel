@@ -81,7 +81,7 @@ jobs:
         run: |
           sudo touch .env
           sudo sh -c "echo '$ENV_PROD' > .env"
-          until docker exec project_db mysqladmin ping --silent; do
+          until docker exec ${PROJECT_DB_CONTAINER} mysqladmin ping --silent; do
             echo "Waiting for MySQL to be ready..."
             sleep 5
           done
