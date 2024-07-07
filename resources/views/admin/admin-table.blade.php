@@ -7,7 +7,7 @@
         @csrf
         <table class="iksweb">
             <tr>
-                <th></th>
+                <th>id</th>
                 <th>Название книги</th>
             </tr>
             @foreach($books as $book)

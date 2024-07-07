@@ -16,7 +16,6 @@ return new class extends Migration
             $table->string('title');
             $table->string('authors')->nullable();
             $table->integer('year')->nullable();
-
         });
     }
 

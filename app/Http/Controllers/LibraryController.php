@@ -30,17 +30,16 @@ class LibraryController extends Controller
             'title.*' => 'string|max:64|required',
         ], [
             'max' => 'Максимум :max символов',
-            'min' => 'Минимум :min символов',
             'required' => 'Поле :attribute обязательно для заполнения'
         ]);
 
-        // Создание каждой книги на основе валидированных данных
-        if (!empty($validatedData['title'])) {
-            foreach ($validatedData['title'] as $key => $title) {
-                $book = new Books();
-                $book->create(['title' => $title]);
-            }
+        $booksData = [];
+
+        foreach ($validatedData['title'] as $key => $title) {
+            $booksData[] = ['title' => $title];
         }
+
+        Books::insert($booksData);
 
         return redirect()->route('adminka');
     }
