@@ -81,14 +81,16 @@ jobs:
         run: |
           sudo touch .env
           sudo sh -c "echo '$ENV_PROD' > .env"
+          until docker exec ${secrets.PROJECT_DB_CONTAINER} mysqladmin ping --silent; do
+            echo "Waiting for MySQL to be ready..."
+            sleep 5
+          done
+          docker exec ${{ secrets.PROJECT_APP_CONTAINER }} sh -c "php artisan migrate --force"
 
       - name: update setting for nginx
         run: |
           sudo apt-get install acl -y
           sudo setfacl -R -m u:www-data:rwx /var/www/
 
-      - name: Archive artifact  # Шаг: архивирование артефакта
-        uses: actions/upload-artifact@v2
-        with:
-          name: .env  # Имя артефакта (папка или файл, который вы хотите загрузить)
-          path: .env  # Путь к артефакту, который нужно загрузить
+env:
+  DB_CONNECTION: ${{ secrets.DB_CONNECTION }}
