@@ -54,7 +54,7 @@ jobs:
     runs-on: self-hosted
     defaults:
       run:
-        working-directory: /var/www/lib-laravel
+        working-directory: ${PROJECT_FOLDER}
     env:
       PROJECT_FOLDER: ${{ secrets.PROJECT_FOLDER }}
       PROJECT_APP_CONTAINER: ${{ secrets.PROJECT_APP_CONTAINER }}
@@ -85,13 +85,13 @@ jobs:
             echo "Waiting for MySQL to be ready..."
             sleep 5
           done
-          docker exec ${{ secrets.PROJECT_DB_CONTAINER }} sh -c "php artisan migrate --force"
+          docker exec ${PROJECT_APP_CONTAINER} sh -c "php artisan migrate --force"
 
 
       - name: update setting for nginx
         run: |
           sudo apt-get install acl -y
-          sudo setfacl -R -m u:www-data:rwx /var/www/
+          sudo setfacl -R -m u:www-data:rwx ${PROJECT_FOLDER}
 
 env:
   DB_CONNECTION: ${{ secrets.DB_CONNECTION }}
