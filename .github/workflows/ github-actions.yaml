@@ -73,19 +73,19 @@ jobs:
 
       - name: Install dependencies and build assets
         run: |
-          docker exec ${{ secrets.PROJECT_APP_CONTAINER }} sh -c "composer install"
-          docker exec ${{ secrets.PROJECT_APP_CONTAINER }} sh -c "npm install"
-          docker exec ${{ secrets.PROJECT_APP_CONTAINER }} sh -c "npm run build"
+          docker exec "${PROJECT_APP_CONTAINER}" sh -c "composer install"
+          docker exec ${PROJECT_APP_CONTAINER}" sh -c "npm install"
+          docker exec ${PROJECT_APP_CONTAINER}" sh -c "npm run build"
 
       - name: Copy .env file and run migrations
         run: |
           sudo touch .env
           sudo sh -c "echo '$ENV_PROD' > .env"
-          until docker exec project_db mysqladmin ping --silent; do
-            echo "Waiting for MySQL to be ready..."
-            sleep 5
+          until docker exec project_db mysqladmin ping --silent; do \
+            echo "Waiting for MySQL to be ready..." \
+            sleep 5 \
           done
-          docker exec ${{ secrets.PROJECT_APP_CONTAINER }} sh -c "php artisan migrate --force"
+          docker exec ${{ secrets.PROJECT_DB_CONTAINER }} sh -c "php artisan migrate --force"
 
       - name: update setting for nginx
         run: |
