@@ -81,7 +81,10 @@ jobs:
         run: |
           sudo touch .env
           sudo sh -c "echo '$ENV_PROD' > .env"
-          sleep 30
+          until docker exec project_db mysqladmin ping --silent; do
+            echo "Waiting for MySQL to be ready..."
+            sleep 5
+          done
           docker exec ${{ secrets.PROJECT_APP_CONTAINER }} sh -c "php artisan migrate --force"
 
       - name: update setting for nginx
