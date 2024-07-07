@@ -81,6 +81,7 @@ jobs:
         run: |
           sudo touch .env
           sudo sh -c "echo '$ENV_PROD' > .env"
+          sleep 30
           docker exec ${{ secrets.PROJECT_APP_CONTAINER }} sh -c "php artisan migrate --force"
 
       - name: update setting for nginx
